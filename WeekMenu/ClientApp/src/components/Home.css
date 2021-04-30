@@ -1,0 +1,28 @@
+﻿#container{
+    align-content: center;
+    align-items: center;
+    text-align: center;
+    margin: 50px;
+}
+#calorieamount{
+    margin: 25px;
+}
+#fourthmeal {
+    margin: 25px;
+}
+#foodlist {
+    margin: auto;
+    width: 70%;
+}
+#foodlistitem {
+    border-radius: 10px;
+    border: 2px solid #808080;
+    margin: 1px;
+}
+#foodlistaddcontainer{
+}
+#calculate {
+    margin: 50px;
+    margin-right: 20%;
+    text-align: right;
+}
