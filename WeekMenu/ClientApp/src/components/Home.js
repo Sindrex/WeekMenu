@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Button, Dropdown, ListGroup, Col, Row, Container } from 'react-bootstrap';
+import { Button, Dropdown, Col, Row, Container } from 'react-bootstrap';
 import { FoodTypes, MealTypes, Foods, Meals, MakeWeekPlan } from './Food';
 
 import './Home.css';
@@ -11,9 +11,8 @@ export class Home extends Component {
     static displayName = Home.name;
     state = {
         selectedfoodlist: [],
-        selectedcaloriesstr: "Calories",
-        selectedcalories: 0,
-        selectedfooddropdown: "Food",
+        selectedcaloriesstr: "Man (2500)",
+        selectedcalories: 2500,
         fourthmeal: false,
         weekplan: null
     }
@@ -94,8 +93,10 @@ export class Home extends Component {
                                 </Dropdown.Toggle>
 
                                 <Dropdown.Menu>
-                                        {Object.keys(Meals).map((prop, i) =>
-                                            <Dropdown.Item key={i} onClick={() => this.onAddFood(Meals[prop])}>{Meals[prop].name}</Dropdown.Item>
+                                        {Object.keys(Meals).map((prop, i) => {
+                                            if (this.state.selectedfoodlist.includes(Meals[prop])) return;
+                                            return <Dropdown.Item key={i} onClick={() => this.onAddFood(Meals[prop])}>{Meals[prop].name}</Dropdown.Item>
+                                        }
                                     )}
                                 </Dropdown.Menu>
                                 </Dropdown>
@@ -106,28 +107,62 @@ export class Home extends Component {
                 <div id="calculate">
                     <Button variant="primary" onClick={this.calculatePlan}>Calculate</Button>
                 </div>
-                <div id="weekplan">
+                <Container id="weekplan">
                     {this.state.weekplan ? Object.keys(this.state.weekplan).map((day, i) => 
-                        <div key={i}>
-                            <p><b>{day}:</b></p>
-                            <p>Breakfast</p>
-                            {this.state.weekplan[day].breakfast.map((item, j) =>
-                                <p key={j}>-{item.name}</p>
-                            )}
-                            <p>Lunch</p>
-                            {this.state.weekplan[day].lunch.map((item, j) =>
-                                <p key={j}>-{item.name}</p>
-                            )}
-                            <p>Dinner</p>
-                            <p>-{this.state.weekplan[day].dinner.name}</p>
-                            <p>Supper</p>
-                            {this.state.weekplan[day].supper.map((item, j) =>
-                                <p key={j}>-{item.name}</p>
-                            )}
-                        </div>
+                        <Row key={i} id="weekplanrow">
+                            <Col id="weekplancol" md={1}>
+                                <p><b>{day}: {Math.round(this.state.weekplan[day].cal)}kcal</b></p>
+                            </Col>
+                            <Col id="weekplancol">
+                                <p>Breakfast: {Math.round(this.state.weekplan[day].breakfast.cal)}kcal</p>
+                                {this.state.weekplan[day].breakfast.map((item, j) =>
+                                    <div key={j}>
+                                        <p id="weekplanmeal">{item.name}</p>
+                                        <p id="weekplanmealingredient">({Math.round(item.cal)}kcal)</p>
+                                        {item.ingredients.map((ingredient, k) =>
+                                            <p key={k} id="weekplanmealingredient">{ingredient.food.name}: {ingredient.amountg}g</p>
+                                        )}
+                                    </div>
+                                )}
+                            </Col>
+                            <Col id="weekplancol">
+                                <p>Lunch: {Math.round(this.state.weekplan[day].lunch.cal)}kcal</p>
+                                {this.state.weekplan[day].lunch.map((item, j) =>
+                                    <div key={j}>
+                                        <p id="weekplanmeal">{item.name}</p>
+                                        <p id="weekplanmealingredient">({Math.round(item.cal)}kcal)</p>
+                                        {item.ingredients.map((ingredient, k) =>
+                                            <p key={k} id="weekplanmealingredient">{ingredient.food.name}: {ingredient.amountg}g</p>
+                                        )}
+                                    </div>
+                                )}
+                            </Col>
+                            <Col id="weekplancol">
+                                <p>Dinner: {Math.round(this.state.weekplan[day].dinner.cal)}kcal</p>
+                                <p id="weekplanmeal">{this.state.weekplan[day].dinner.name}</p>
+                                <p id="weekplanmealingredient">({Math.round(this.state.weekplan[day].dinner.cal)}kcal)</p>
+                                {
+                                    this.state.weekplan[day].dinner.ingredients.map((ingredient, k) =>
+                                        <p key={k} id="weekplanmealingredient">{ingredient.food.name}: {ingredient.amountg}g</p>
+                                    )
+                                }
+                            </Col>
+                            <Col id="weekplancol">
+                                <p>Supper: {Math.round(this.state.weekplan[day].supper.cal)}kcal</p>
+                                {this.state.weekplan[day].supper.map((item, j) =>
+                                    <div key={j}>
+                                        <p id="weekplanmeal">{item.name}</p>
+                                        <p id="weekplanmealingredient">({Math.round(item.cal)}kcal)</p>
+                                        {item.ingredients.map((ingredient, k) =>
+                                            <p key={k} id="weekplanmealingredient">{ingredient.food.name}: {ingredient.amountg}g</p>
+                                        )}
+                                    </div>
+                                )}
+                            </Col>
+                        </Row>
                     ) : <div/>
                     }
-                </div>
+                </Container>
             </div>
         );
         //<Col md="auto"><Button variant="success">+</Button></Col>
