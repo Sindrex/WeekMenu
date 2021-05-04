@@ -12,7 +12,7 @@
 }
 #foodlist {
     margin: auto;
-    width: 70%;
+    width: 30%;
 }
 #foodlistitem {
     border-radius: 10px;
@@ -20,28 +20,11 @@
     margin: 1px;
 }
 #foodlistaddcontainer{
+    margin-top: 10px;
+    padding-top: 2px;
 }
 #calculate {
     margin: 50px;
     margin-right: 20%;
     text-align: right;
-}
-#weekplan {
-    text-align: left;
-}
-#weekplanrow {
-    border-top: 2px solid #808080;
-    border-bottom: 2px solid #808080;
-    margin: 1px;
-}
-#weekplancol {
-    border-left: 2px solid #808080;
-    border-right: 2px solid #808080;
-    margin: 1px;
-}
-#weekplanmeal {
-    text-indent: 5%;
-}
-#weekplanmealingredient {
-    text-indent: 10%;
 }

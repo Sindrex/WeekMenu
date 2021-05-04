@@ -1,29 +1,31 @@
-﻿export function MakeWeekPlan(dailycal, meals, fourthmeal) {
+﻿import { Random } from './Randomizer';
+
+export function MakeWeekPlan(dailycal, meals, fourthmeal) {
     let dinners = meals.filter(meal => meal.types.includes(MealTypes.dinner));
     let lunches = meals.filter(meal => meal.types.includes(MealTypes.lunch));
     let breakfasts = meals.filter(meal => meal.types.includes(MealTypes.breakfast));
     let suppers = meals.filter(meal => meal.types.includes(MealTypes.supper));
 
     let plan = {
-        mon: {
+        monday: {
             breakfast: [],
             lunch: [],
             dinner: [],
             supper: []
         },
-        tue: {
+        tuesday: {
             breakfast: [],
             lunch: [],
             dinner: [],
             supper: []
         },
-        wed: {
+        wednesday: {
             breakfast: [],
             lunch: [],
             dinner: [],
             supper: []
         },
-        thurs: {
+        thursday: {
             breakfast: [],
             lunch: [],
             dinner: [],
@@ -56,10 +58,10 @@
         let daycal = dailycal;
 
         if (dinneri >= dinners.length) dinneri = 0;
-        let dinner = dinners[dinneri];
+        let dinner = JSON.parse(JSON.stringify(dinners[dinneri]));
         let dinnerCal = GetMealCal(dinner);
         dinner["cal"] = dinnerCal;
-        plan[day].dinner = dinner;
+        plan[day].dinner.push(dinner);
         plan[day].dinner["cal"] = dinnerCal;
         daycal -= dinnerCal;
         dinneri++;
@@ -71,10 +73,13 @@
         while (daycal > 0) {
             //breakfast
             let breakfasti = Math.floor(Math.random() * breakfasts.length);
-            let breakfast = breakfasts[breakfasti];
+            let breakfast = JSON.parse(JSON.stringify(breakfasts[breakfasti]));
             let breakfastCal = GetMealCal(breakfast);
             daycal -= breakfastCal;
             if (daycal > -tolerance && daycal < tolerance) {
+                breakfast["cal"] = breakfastCal;
+                plan[day].breakfast.push(breakfast);
+                plan[day].breakfast.cal += breakfastCal;
                 break;
             }
             else if (daycal < -tolerance) {
@@ -88,10 +93,13 @@
 
             //lunch
             let lunchi = Math.floor(Math.random() * lunches.length);
-            let lunch = lunches[lunchi];
+            let lunch = JSON.parse(JSON.stringify(lunches[lunchi]));
             let lunchCal = GetMealCal(lunch);
             daycal -= lunchCal;
             if (daycal > -tolerance && daycal < tolerance) {
+                lunch["cal"] = lunchCal;
+                plan[day].lunch.push(lunch);
+                plan[day].lunch.cal += lunchCal;
                 break;
             }
             else if (daycal < -tolerance) {
@@ -105,10 +113,13 @@
 
             //supper
             let supperi = Math.floor(Math.random() * suppers.length);
-            let supper = suppers[supperi];
+            let supper = JSON.parse(JSON.stringify(suppers[supperi]));
             let supperCal = GetMealCal(supper);
             daycal -= supperCal;
             if (daycal > -tolerance && daycal < tolerance) {
+                supper["cal"] = supperCal;
+                plan[day].supper.push(supper);
+                plan[day].supper.cal += supperCal;
                 break;
             }
             else if (daycal < -tolerance) {
@@ -128,8 +139,12 @@
     return plan;
 }
 
+var diversifier = 0;
+
 export function GetMealCal(meal) {
     let res = 0;
+    let randomizer = Random(meal.name + diversifier);
+    diversifier++;
     for (let i = 0; i < meal.ingredients.length; i++) {
         if (meal.ingredients[i].food) {
             res += meal.ingredients[i].food.cal / 100 * meal.ingredients[i].amountg;
@@ -142,12 +157,29 @@ export function GetMealCal(meal) {
                 }
                 return 0;
             });
-            let randfood = Math.floor(Math.random() * foodoftype.length);
+            let randfood = Math.floor(randomizer() * foodoftype.length);
+            //let randfood = Math.floor(Math.random() * foodoftype.length);
             meal.ingredients[i].food = foodoftype[randfood];
             res += meal.ingredients[i].food.cal / 100 * meal.ingredients[i].amountg;
         }
     }
     return res;
+}
+
+export const Days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+
+export function SetDayCal(day) {
+    let res = 0;
+    Object.keys(MealTypes).map((meal, m) => {
+        let mealres = 0;
+        for (let j = 0; j < day[meal].length; j++) {
+            let food = day[meal][j];
+            mealres += food.cal;
+        }
+        day[meal].cal = mealres;
+        res += mealres;
+    });
+    day.cal = res;
 }
 
 export const FoodTypes = {
@@ -183,6 +215,8 @@ export const Foods = { //cal (kcal) = per 100g
     //other
     yoghurt: { name: "Yoghurt", type: FoodTypes.diary, cal: 70 },
     tandoori_sauce: { name: "Tandoori Sauce", type: FoodTypes.sauce, cal: 112 },
+    wok_greens: { name: "Wok Greens", type: FoodTypes.greens_mix, cal: 33 },
+    wok_sauce_teriyaki: { name: "Wok Sauce Teriyaki", type: FoodTypes.sauce, cal: 97 },
 
     //Bakes
     spring_roll_wrapper: { name: "Spring Roll Wrappers", type: FoodTypes.baked, cal: 285 },
@@ -314,6 +348,14 @@ export const Meals = [
             { food: Foods.tandoori_sauce, amountg: 180 },
             { food: Foods.rice, amountg: 80 },
             { food: Foods.naan, amountg: 130 },]
+    },
+    {
+        name: "Wok", types: [MealTypes.dinner], ingredients: [
+            { food: null, amountg: 200, type: FoodTypes.drink },
+            { food: Foods.chicken, amountg: 125 },
+            { food: Foods.wok_greens, amountg: 200 },
+            { food: Foods.rice, amountg: 80 },
+            { food: Foods.wok_sauce_teriyaki, amountg: 60 },]
     },
 ]
 

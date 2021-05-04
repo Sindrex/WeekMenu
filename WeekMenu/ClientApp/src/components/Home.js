@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Button, Dropdown, Col, Row, Container } from 'react-bootstrap';
 import { FoodTypes, MealTypes, Foods, Meals, MakeWeekPlan } from './Food';
+import { WeekPlan } from './WeekPlan';
 
 import './Home.css';
 
@@ -37,11 +38,21 @@ export class Home extends Component {
             selectedfoodlist: list
         });
     }
+    onAddAllFood = () => {
+        this.setState({
+            selectedfoodlist: Meals
+        });
+    }
     onRemoveFood = (e) => {
         let list = this.state.selectedfoodlist;
         list = list.filter(item => item.name !== e.name);
         this.setState({
             selectedfoodlist: list
+        });
+    }
+    onRemoveAllFood = () => {
+        this.setState({
+            selectedfoodlist: []
         });
     }
 
@@ -80,26 +91,30 @@ export class Home extends Component {
                         {this.state.selectedfoodlist.map((item, i) =>
                             <Row id="foodlistitem" key={i}>
                                 <Col>{item.name}</Col>
-                                <Col><Button variant="danger" onClick={() => this.onRemoveFood(item)}>-</Button></Col>
+                                <Col md="auto"><Button variant="danger" onClick={() => this.onRemoveFood(item)}>-</Button></Col>
                             </Row>
                          )}
                     </Container>
                     <Container id="foodlistaddcontainer">
                         <Row className="justify-content-md-center">
-                            <Col md="auto">
-                            <Dropdown>
-                                <Dropdown.Toggle variant="success" id="dropdown-basic">
-                                    Add Food
-                                </Dropdown.Toggle>
+                            <Col>
+                                <Dropdown>
+                                    <Dropdown.Toggle variant="success" id="dropdown-basic">
+                                        Add Food
+                                    </Dropdown.Toggle>
 
-                                <Dropdown.Menu>
-                                        {Object.keys(Meals).map((prop, i) => {
-                                            if (this.state.selectedfoodlist.includes(Meals[prop])) return;
-                                            return <Dropdown.Item key={i} onClick={() => this.onAddFood(Meals[prop])}>{Meals[prop].name}</Dropdown.Item>
-                                        }
-                                    )}
-                                </Dropdown.Menu>
+                                    <Dropdown.Menu>
+                                        <Dropdown.Item onClick={this.onAddAllFood}>Add All</Dropdown.Item>
+                                            {Object.keys(Meals).map((prop, i) => {
+                                                if (this.state.selectedfoodlist.includes(Meals[prop])) return;
+                                                return <Dropdown.Item key={i} onClick={() => this.onAddFood(Meals[prop])}>{Meals[prop].name}</Dropdown.Item>
+                                            }
+                                            )}
+                                    </Dropdown.Menu>
                                 </Dropdown>
+                            </Col>
+                            <Col md="auto">
+                                <Button variant="danger" onClick={this.onRemoveAllFood}>Clear All</Button>
                             </Col>
                         </Row>
                     </Container>
@@ -107,62 +122,7 @@ export class Home extends Component {
                 <div id="calculate">
                     <Button variant="primary" onClick={this.calculatePlan}>Calculate</Button>
                 </div>
-                <Container id="weekplan">
-                    {this.state.weekplan ? Object.keys(this.state.weekplan).map((day, i) => 
-                        <Row key={i} id="weekplanrow">
-                            <Col id="weekplancol" md={1}>
-                                <p><b>{day}: {Math.round(this.state.weekplan[day].cal)}kcal</b></p>
-                            </Col>
-                            <Col id="weekplancol">
-                                <p>Breakfast: {Math.round(this.state.weekplan[day].breakfast.cal)}kcal</p>
-                                {this.state.weekplan[day].breakfast.map((item, j) =>
-                                    <div key={j}>
-                                        <p id="weekplanmeal">{item.name}</p>
-                                        <p id="weekplanmealingredient">({Math.round(item.cal)}kcal)</p>
-                                        {item.ingredients.map((ingredient, k) =>
-                                            <p key={k} id="weekplanmealingredient">{ingredient.food.name}: {ingredient.amountg}g</p>
-                                        )}
-                                    </div>
-                                )}
-                            </Col>
-                            <Col id="weekplancol">
-                                <p>Lunch: {Math.round(this.state.weekplan[day].lunch.cal)}kcal</p>
-                                {this.state.weekplan[day].lunch.map((item, j) =>
-                                    <div key={j}>
-                                        <p id="weekplanmeal">{item.name}</p>
-                                        <p id="weekplanmealingredient">({Math.round(item.cal)}kcal)</p>
-                                        {item.ingredients.map((ingredient, k) =>
-                                            <p key={k} id="weekplanmealingredient">{ingredient.food.name}: {ingredient.amountg}g</p>
-                                        )}
-                                    </div>
-                                )}
-                            </Col>
-                            <Col id="weekplancol">
-                                <p>Dinner: {Math.round(this.state.weekplan[day].dinner.cal)}kcal</p>
-                                <p id="weekplanmeal">{this.state.weekplan[day].dinner.name}</p>
-                                <p id="weekplanmealingredient">({Math.round(this.state.weekplan[day].dinner.cal)}kcal)</p>
-                                {
-                                    this.state.weekplan[day].dinner.ingredients.map((ingredient, k) =>
-                                        <p key={k} id="weekplanmealingredient">{ingredient.food.name}: {ingredient.amountg}g</p>
-                                    )
-                                }
-                            </Col>
-                            <Col id="weekplancol">
-                                <p>Supper: {Math.round(this.state.weekplan[day].supper.cal)}kcal</p>
-                                {this.state.weekplan[day].supper.map((item, j) =>
-                                    <div key={j}>
-                                        <p id="weekplanmeal">{item.name}</p>
-                                        <p id="weekplanmealingredient">({Math.round(item.cal)}kcal)</p>
-                                        {item.ingredients.map((ingredient, k) =>
-                                            <p key={k} id="weekplanmealingredient">{ingredient.food.name}: {ingredient.amountg}g</p>
-                                        )}
-                                    </div>
-                                )}
-                            </Col>
-                        </Row>
-                    ) : <div/>
-                    }
-                </Container>
+                <WeekPlan weekplan={this.state.weekplan} />
             </div>
         );
         //<Col md="auto"><Button variant="success">+</Button></Col>
