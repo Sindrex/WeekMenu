@@ -1,6 +1,6 @@
 ﻿import React, { Component } from 'react';
-import { Button, Dropdown, Col, Row, Container, Card, ListGroup, ListGroupItem } from 'react-bootstrap';
-import { FoodTypes, MealTypes, Foods, Meals, MakeWeekPlan, SetDayCal, Days } from './Food';
+import { Button, Dropdown, Col, Row, Container, Card, Form } from 'react-bootstrap';
+import { MealTypes, SetDayCal, Days, GetMealCal, GetWeekPlanObject, Clone } from './Food';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 import './WeekPlan.css';
@@ -8,12 +8,20 @@ import './WeekPlan.css';
 export class WeekPlan extends Component {
     static displayName = WeekPlan.name;
     state = {
-        weekplan: this.props.weekplan
+        weekplan: this.props.weekplan,
+        meals: this.props.meals,
+        ingredients: this.props.ingredients
     };
 
     componentDidUpdate(prevProps) {
         if (prevProps.weekplan !== this.props.weekplan) {
             this.setState({ weekplan: this.props.weekplan });
+        }
+        if (prevProps.meals !== this.props.meals) {
+            this.setState({ meals: this.props.meals });
+        }
+        if (prevProps.ingredients !== this.props.ingredients) {
+            this.setState({ ingredients: this.props.ingredients });
         }
     }
 
@@ -40,9 +48,9 @@ export class WeekPlan extends Component {
             newSourceDestList.splice(sourceIndex, 1);
             newSourceDestList.splice(destIndex, 0, sourceLink);
 
-            tempplan = newSourceDestList;
+            tempplan[sourceDay][sourceMeal] = newSourceDestList;
 
-            SetDayCal(tempplan);
+            SetDayCal(tempplan[sourceDay]);
         }
         else {
             let newSourceList = tempplan[sourceDay][sourceMeal].slice();
@@ -62,9 +70,109 @@ export class WeekPlan extends Component {
         });
     }
 
+    onAddFood = (meal) => {
+        let tempplan = this.state.weekplan;
+
+        meal = Clone(meal);
+
+        meal.cal = GetMealCal(meal, this.state.ingredients); //Set typed ingredients
+
+        tempplan[Days[0]][MealTypes.breakfast].push(meal);
+        SetDayCal(tempplan[Days[0]]);
+        this.setState({
+            weekplan: tempplan
+        });
+    }
+
+    deleteFood = (day, meal, index) => {
+        let tempplan = this.state.weekplan;
+
+        let sourceDest = tempplan[day][meal].slice();
+        sourceDest.splice(index, 1);
+        tempplan[day][meal] = sourceDest;
+        SetDayCal(tempplan[day]);
+
+        this.setState({
+            weekplan: tempplan
+        });
+    }
+
+    clearPlan = () => {
+        this.setState({
+            weekplan: GetWeekPlanObject()
+        });
+    }
+
+    editFood = (day, meal, j) => {
+        let tempplan = this.state.weekplan;
+        let sourceFood = tempplan[day][meal][j];
+        sourceFood["editing"] = true;
+
+        this.setState({
+            weekplan: tempplan
+        });
+    }
+
+    addIngredientToMeal = (day, meal, j) => {
+        let tempplan = this.state.weekplan;
+        let sourceFood = tempplan[day][meal][j];
+        sourceFood.ingredients.push({ food: this.state.ingredients.banana, amountg: 100 });
+
+        this.setState({
+            weekplan: tempplan
+        });
+    }
+
+    removeIngredientToMeal = (day, meal, j, k) => {
+        let tempplan = this.state.weekplan;
+        let sourceFood = tempplan[day][meal][j];
+        sourceFood.ingredients.splice(k, 1);
+        tempplan[day][meal][j] = sourceFood;
+        SetDayCal(tempplan[day]);
+
+        this.setState({
+            weekplan: tempplan
+        });
+    }
+
+    saveEditFood = (day, meal, j, event) => {
+        event.preventDefault();
+
+        let tempplan = this.state.weekplan;
+        let sourceFood = tempplan[day][meal][j];
+        sourceFood["editing"] = false;
+
+        sourceFood.ingredients.map((item, i) => {
+            let foodname = event.target.elements["ingredientselect-" + i].value.toLowerCase().replace(' ', '_');
+            item.food = this.state.ingredients[foodname];
+            item.amountg = parseInt(event.target.elements["ingredientamount-" + i].value);
+        });
+
+        sourceFood.cal = GetMealCal(sourceFood, this.state.ingredients);
+        SetDayCal(tempplan[day]);
+
+        this.setState({
+            weekplan: tempplan
+        });
+    }
+
     render() {
         return (
             <Container id="weekplan">
+                <Row>
+                    <Dropdown>
+                        <Dropdown.Toggle variant="success">
+                            Add Meal to Plan
+                        </Dropdown.Toggle>
+
+                        <Dropdown.Menu>
+                            {this.state.meals.map((meal, i) => 
+                                <Dropdown.Item key={i} onClick={() => this.onAddFood(meal)}>{meal.name}</Dropdown.Item>
+                            )}
+                        </Dropdown.Menu>
+                    </Dropdown>
+                    <Button variant="danger" onClick={this.clearPlan}>Clear Plan</Button>
+                </Row>
                 <DragDropContext onDragEnd={this.onDragEnd}>
                     {this.state.weekplan ? Days.map((day, i) =>
                         <Row key={i} id="weekplanrow">
@@ -89,17 +197,65 @@ export class WeekPlan extends Component {
                                                                 {...provided.draggableProps}
                                                                 {...provided.dragHandleProps}
                                                             >
-                                                                <Card>
-                                                                    <Card.Body>
-                                                                        <Card.Title>{item.name}</Card.Title>
-                                                                        <Card.Subtitle>({Math.round(item.cal)}kcal)</Card.Subtitle>
-                                                                        <ListGroup className="list-group-flush">
+                                                                {!item.editing ? 
+                                                                    <Card>
+                                                                        <Card.Body>
+                                                                            <Row>
+                                                                                <Col>
+                                                                                    <Card.Title style={{ 'fontSize': '1rem' }}>{item.name}</Card.Title>
+                                                                                </Col>
+                                                                                <Col md="auto">
+                                                                                    <Button variant="warning" onClick={() => this.editFood(day, meal, j)} size="sm">Edit</Button>
+                                                                                </Col>
+                                                                            </Row>
+                                                                            <Card.Subtitle>({Math.round(item.cal)}kcal)</Card.Subtitle>
+                                                                                {item.ingredients.map((ingredient, k) =>
+                                                                                    <p id="weekplanmealingredient" key={k}>{ingredient.food.name}: {ingredient.amountg}g</p>
+                                                                                )}
+                                                                        </Card.Body>
+                                                                    </Card>
+                                                                    :
+                                                                    <Card>
+                                                                        <Card.Body>
+                                                                            <Form onSubmit={(e) => this.saveEditFood(day, meal, j, e)}>
+                                                                            <Row>
+                                                                                <Col>
+                                                                                    <Card.Title style={{ 'fontSize': '1rem' }}>{item.name}</Card.Title>
+                                                                                </Col>
+                                                                                <Col md="auto">
+                                                                                    <Button variant="success" type="submit" size="sm">Save</Button>
+                                                                                </Col>
+                                                                            </Row>
+                                                                            <Card.Subtitle>({Math.round(item.cal)}kcal)</Card.Subtitle>
                                                                             {item.ingredients.map((ingredient, k) =>
-                                                                                <ListGroupItem key={k}>{ingredient.food.name}: {ingredient.amountg}g</ListGroupItem>
+                                                                                <div key={k}>
+                                                                                    <Form.Row>
+                                                                                        <Form.Group as={Col}>
+                                                                                            <Form.Control as="select" name={"ingredientselect-" + k}>
+                                                                                            <option>{ingredient.food.name}</option>
+                                                                                            {Object.keys(this.state.ingredients).map((ing, l) => {
+                                                                                                //if (this.state.ingredients[ing].type !== ingredient.food.type) return;
+                                                                                                if (this.state.ingredients[ing].name === ingredient.food.name) return;
+                                                                                                return <option key={l} item={this.state.ingredients[ing]}>{this.state.ingredients[ing].name}</option>
+                                                                                            })}
+                                                                                            </Form.Control>
+                                                                                        </Form.Group>
+                                                                                        <Form.Group as={Col}>
+                                                                                            <Form.Control type="number" name={"ingredientamount-" + k} defaultValue={ingredient.amountg} />
+                                                                                        </Form.Group>
+                                                                                        <Form.Group as={Col} md="auto">
+                                                                                            <Button variant="danger" md="auto" size="sm" onClick={() => this.removeIngredientToMeal(day, meal, j, k)}>-</Button>
+                                                                                        </Form.Group>
+                                                                                    </Form.Row>
+                                                                                </div>
                                                                             )}
-                                                                        </ListGroup>
-                                                                    </Card.Body>
-                                                                </Card>
+
+                                                                            <Button variant="success" block size="sm" onClick={() => this.addIngredientToMeal(day, meal, j)}>+</Button>
+                                                                            <Button variant="danger" block size="sm" onClick={() => this.deleteFood(day, meal, j)}>Delete meal</Button>
+                                                                            </Form>
+                                                                        </Card.Body>
+                                                                    </Card>
+                                                                }
                                                             </div>
                                                         )}
                                                     </Draggable>

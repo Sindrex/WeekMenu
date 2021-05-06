@@ -1,12 +1,11 @@
 ﻿import { Random } from './Randomizer';
 
-export function MakeWeekPlan(dailycal, meals, fourthmeal) {
-    let dinners = meals.filter(meal => meal.types.includes(MealTypes.dinner));
-    let lunches = meals.filter(meal => meal.types.includes(MealTypes.lunch));
-    let breakfasts = meals.filter(meal => meal.types.includes(MealTypes.breakfast));
-    let suppers = meals.filter(meal => meal.types.includes(MealTypes.supper));
+export function Clone(obj) {
+    return JSON.parse(JSON.stringify(obj));
+}
 
-    let plan = {
+export function GetWeekPlanObject() {
+    return {
         monday: {
             breakfast: [],
             lunch: [],
@@ -49,7 +48,16 @@ export function MakeWeekPlan(dailycal, meals, fourthmeal) {
             dinner: [],
             supper: []
         },
-    }
+    };
+}
+
+export function MakeWeekPlan(dailycal, selmeals, fourthmeal, ingredients) {
+    let dinners = selmeals.filter(meal => meal.types.includes(MealTypes.dinner));
+    let lunches = selmeals.filter(meal => meal.types.includes(MealTypes.lunch));
+    let breakfasts = selmeals.filter(meal => meal.types.includes(MealTypes.breakfast));
+    let suppers = selmeals.filter(meal => meal.types.includes(MealTypes.supper));
+
+    let plan = GetWeekPlanObject();
 
     let tolerance = 100; //cal
     let dinneri = 0;
@@ -58,8 +66,8 @@ export function MakeWeekPlan(dailycal, meals, fourthmeal) {
         let daycal = dailycal;
 
         if (dinneri >= dinners.length) dinneri = 0;
-        let dinner = JSON.parse(JSON.stringify(dinners[dinneri]));
-        let dinnerCal = GetMealCal(dinner);
+        let dinner = Clone(dinners[dinneri]);
+        let dinnerCal = GetMealCal(dinner, ingredients);
         dinner["cal"] = dinnerCal;
         plan[day].dinner.push(dinner);
         plan[day].dinner["cal"] = dinnerCal;
@@ -73,8 +81,8 @@ export function MakeWeekPlan(dailycal, meals, fourthmeal) {
         while (daycal > 0) {
             //breakfast
             let breakfasti = Math.floor(Math.random() * breakfasts.length);
-            let breakfast = JSON.parse(JSON.stringify(breakfasts[breakfasti]));
-            let breakfastCal = GetMealCal(breakfast);
+            let breakfast = Clone(breakfasts[breakfasti]);
+            let breakfastCal = GetMealCal(breakfast, ingredients);
             daycal -= breakfastCal;
             if (daycal > -tolerance && daycal < tolerance) {
                 breakfast["cal"] = breakfastCal;
@@ -93,8 +101,8 @@ export function MakeWeekPlan(dailycal, meals, fourthmeal) {
 
             //lunch
             let lunchi = Math.floor(Math.random() * lunches.length);
-            let lunch = JSON.parse(JSON.stringify(lunches[lunchi]));
-            let lunchCal = GetMealCal(lunch);
+            let lunch = Clone(lunches[lunchi]);
+            let lunchCal = GetMealCal(lunch, ingredients);
             daycal -= lunchCal;
             if (daycal > -tolerance && daycal < tolerance) {
                 lunch["cal"] = lunchCal;
@@ -112,9 +120,10 @@ export function MakeWeekPlan(dailycal, meals, fourthmeal) {
             plan[day].lunch.cal += lunchCal;
 
             //supper
+            if (!fourthmeal) continue;
             let supperi = Math.floor(Math.random() * suppers.length);
-            let supper = JSON.parse(JSON.stringify(suppers[supperi]));
-            let supperCal = GetMealCal(supper);
+            let supper = Clone(suppers[supperi]);
+            let supperCal = GetMealCal(supper, ingredients);
             daycal -= supperCal;
             if (daycal > -tolerance && daycal < tolerance) {
                 supper["cal"] = supperCal;
@@ -141,7 +150,7 @@ export function MakeWeekPlan(dailycal, meals, fourthmeal) {
 
 var diversifier = 0;
 
-export function GetMealCal(meal) {
+export function GetMealCal(meal, ingredients) {
     let res = 0;
     let randomizer = Random(meal.name + diversifier);
     diversifier++;
@@ -151,9 +160,9 @@ export function GetMealCal(meal) {
         }
         else if (meal.ingredients[i].type) {
             let foodoftype = [];
-            Object.keys(Foods).map((food) => {
-                if (Foods[food].type === meal.ingredients[i].type) {
-                    foodoftype.push(Foods[food]);
+            Object.keys(ingredients).map((food) => {
+                if (ingredients[food].type === meal.ingredients[i].type) {
+                    foodoftype.push(ingredients[food]);
                 }
                 return 0;
             });
@@ -191,7 +200,12 @@ export const FoodTypes = {
     meat: "meat",
     combo: "combo",
     dinnerfiber: "dinnerfiber",
-    greens: "greens"
+    greens: "greens",
+    sauce: "sauce",
+    baked: "baked",
+
+    other: "other",
+    taco: "taco"
 }
 
 export const Foods = { //cal (kcal) = per 100g
@@ -215,7 +229,7 @@ export const Foods = { //cal (kcal) = per 100g
     //other
     yoghurt: { name: "Yoghurt", type: FoodTypes.diary, cal: 70 },
     tandoori_sauce: { name: "Tandoori Sauce", type: FoodTypes.sauce, cal: 112 },
-    wok_greens: { name: "Wok Greens", type: FoodTypes.greens_mix, cal: 33 },
+    wok_greens: { name: "Wok Greens", type: FoodTypes.other, cal: 33 },
     wok_sauce_teriyaki: { name: "Wok Sauce Teriyaki", type: FoodTypes.sauce, cal: 97 },
 
     //Bakes
@@ -227,7 +241,7 @@ export const Foods = { //cal (kcal) = per 100g
     apple_juice: { name: "Apple Juice", type: FoodTypes.drink, cal: 42 },
     orange_juice: { name: "Orange Juice", type: FoodTypes.drink, cal: 43 },
     lemonade: { name: "Lemonade", type: FoodTypes.drink, cal: 43 },
-    soda: { name: "Soda", type: FoodTypes.drink, cal: 180 },
+    soda: { name: "Soda", type: FoodTypes.drink, cal: 42 },
 
     //Meats
     minced_meat_cattle: { name: "Minced Meat (cattle)", type: FoodTypes.meat, cal: 288 },
@@ -272,13 +286,12 @@ export const MealTypes = {
 export const Meals = [
     {
         name: "Drink", types: [MealTypes.breakfast, MealTypes.lunch, MealTypes.supper], ingredients: [
-            { food: null, amountg: 200, type: FoodTypes.drink },
             { food: null, amountg: 200, type: FoodTypes.drink }]
     },
     {
         name: "Muesli and Yoghurt", types: [MealTypes.breakfast, MealTypes.lunch, MealTypes.supper], ingredients: [
-            { food: Foods.muesli, amountg: 30 },
-            { food: Foods.yoghurt, amountg: 200 }]
+            { food: Foods.muesli, amountg: 90 },
+            { food: Foods.yoghurt, amountg: 120 }]
     },
     {
         name: "Breadslice with topping", types: [MealTypes.breakfast, MealTypes.lunch, MealTypes.supper], ingredients: [
@@ -292,7 +305,6 @@ export const Meals = [
     },
     {
         name: "Taco", types: [MealTypes.dinner], ingredients: [
-            { food: null, amountg: 200, type: FoodTypes.drink },
             { food: Foods.cheese, amountg: 30 },
             { food: Foods.tortilla, amountg: 126 },
             { food: Foods.minced_meat_cattle, amountg: 150 },
@@ -301,7 +313,6 @@ export const Meals = [
     },
     {
         name: "Lasagna", types: [MealTypes.dinner], ingredients: [
-            { food: null, amountg: 200, type: FoodTypes.drink },
             { food: Foods.cheese, amountg: 60 },
             { food: Foods.pasta, amountg: 90 },
             { food: Foods.minced_meat_cattle, amountg: 150 },
@@ -309,7 +320,6 @@ export const Meals = [
     },
     {
         name: "Salmon and veggies", types: [MealTypes.dinner], ingredients: [
-            { food: null, amountg: 200, type: FoodTypes.drink },
             { food: Foods.salmon, amountg: 187 },
             { food: Foods.potato, amountg: 150 },
             { food: Foods.carrot, amountg: 112 },
@@ -317,7 +327,6 @@ export const Meals = [
     },
     {
         name: "Spring rolls", types: [MealTypes.dinner], ingredients: [
-            { food: null, amountg: 200, type: FoodTypes.drink },
             { food: Foods.onion, amountg: 128 },
             { food: Foods.cabbage, amountg: 136 },
             { food: Foods.minced_meat_pork, amountg: 270 },
@@ -326,7 +335,6 @@ export const Meals = [
     },
     {
         name: "Mexican Pot", types: [MealTypes.dinner], ingredients: [
-            { food: null, amountg: 200, type: FoodTypes.drink },
             { food: Foods.rice, amountg: 60 },
             { food: Foods.tomato, amountg: 15 },
             { food: Foods.onion, amountg: 14 },
@@ -336,14 +344,12 @@ export const Meals = [
     },
     {
         name: "Chicken and veggies", types: [MealTypes.dinner], ingredients: [
-            { food: null, amountg: 200, type: FoodTypes.drink },
             { food: Foods.chicken, amountg: 125 },
             { food: null, amountg: 100, type: FoodTypes.dinnerfiber },
             { food: null, amountg: 150, type: FoodTypes.greens },]
     },
     {
         name: "Tandoori", types: [MealTypes.dinner], ingredients: [
-            { food: null, amountg: 200, type: FoodTypes.drink },
             { food: Foods.chicken, amountg: 125 },
             { food: Foods.tandoori_sauce, amountg: 180 },
             { food: Foods.rice, amountg: 80 },
@@ -351,7 +357,6 @@ export const Meals = [
     },
     {
         name: "Wok", types: [MealTypes.dinner], ingredients: [
-            { food: null, amountg: 200, type: FoodTypes.drink },
             { food: Foods.chicken, amountg: 125 },
             { food: Foods.wok_greens, amountg: 200 },
             { food: Foods.rice, amountg: 80 },

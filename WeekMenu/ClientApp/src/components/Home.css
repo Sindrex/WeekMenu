@@ -28,3 +28,15 @@
     margin-right: 20%;
     text-align: right;
 }
+#managefoods{
+    width: 70%;
+    margin: auto;
+}
+#managefoodslist{
+    width: 50%;
+    text-align: center;
+}
+#managefoodslistitem {
+    border-bottom: 2px solid #d5d5d5;
+    margin: 2px;
+}

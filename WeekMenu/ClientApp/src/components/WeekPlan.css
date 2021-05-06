@@ -1,5 +1,7 @@
 ﻿#weekplan {
     text-align: left;
+    width: 70%;
+    max-width: 2000px;
 }
 #weekplanrow {
     border-top: 2px solid #808080;
@@ -15,5 +17,5 @@
     text-indent: 5%;
 }
 #weekplanmealingredient {
-    text-indent: 10%;
+    margin: 1px;
 }
