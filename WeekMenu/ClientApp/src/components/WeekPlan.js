@@ -151,6 +151,8 @@ export class WeekPlan extends Component {
         sourceFood.cal = GetMealCal(sourceFood, this.state.ingredients);
         SetDayCal(tempplan[day]);
 
+        console.log(sourceFood);
+
         this.setState({
             weekplan: tempplan
         });

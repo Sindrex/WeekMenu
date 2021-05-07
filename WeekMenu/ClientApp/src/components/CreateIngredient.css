@@ -1,0 +1,10 @@
+﻿#typedropdown {
+    height: 10vh;
+    overflow-y: scroll;
+}
+#createingredient {
+    align-content: center;
+    height: 15vh;
+    margin: auto;
+    padding: 10px;
+}

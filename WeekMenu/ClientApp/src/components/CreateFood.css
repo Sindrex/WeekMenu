@@ -1,5 +1,9 @@
 ﻿#existingingredientsdropdown {
-    max-height: 150px;
-    height: 150px;
+    height: 10vh;
     overflow-y: scroll;
+}
+#createfood{
+    align-content:center;
+    margin: auto;
+    padding: 10px;
 }

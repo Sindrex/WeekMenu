@@ -1,13 +1,23 @@
 import React, { Component } from 'react';
+import Pdf from "react-to-pdf";
 import { Button, Dropdown, Col, Row, Container, Card, Accordion } from 'react-bootstrap';
 import { Foods, Meals, MakeWeekPlan, GetWeekPlanObject } from './Food';
 import { WeekPlan } from './WeekPlan';
 import { CreateFood } from './CreateFood';
+import { CreateIngredient } from './CreateIngredient';
 
 import './Home.css';
 
 const womanCal = 2000;
 const manCal = 2500;
+
+//pdf stuff
+const ref = React.createRef();
+const options = {
+    orientation: 'landscape',
+    unit: 'in',
+    format: [12000, 12000]
+};
 
 export class Home extends Component {
     static displayName = Home.name;
@@ -88,12 +98,14 @@ export class Home extends Component {
     }
 
     saveOwnIngredient = (ingredient) => {
+        let ingredientnamekey = ingredient.name.toLowerCase().replace(' ', '_');
+
         let obj = this.state.ingredients;
-        if (obj.hasOwnProperty(ingredient.name)) return;
+        if (obj.hasOwnProperty(ingredientnamekey)) return;
 
         console.log(obj);
 
-        obj[ingredient.name] = ingredient;
+        obj[ingredientnamekey] = ingredient;
         this.setState({
             ingredients: obj
         });
@@ -126,6 +138,46 @@ export class Home extends Component {
         });
     }
 
+    onDeleteIngredient = (key) => {
+        let ingredients = this.state.ingredients;
+        delete ingredients[key];
+
+        this.setState({
+            ingredients: ingredients
+        });
+    }
+
+    makegrid(meals) {
+        let grid = [];
+        grid.push([]);
+
+        let perrow = 4;
+        let rowIndex = 0;
+        for (let i = 0; i < meals.length; i++) {
+            if (i % perrow === 0 && i > 0) {
+                rowIndex++;
+                grid.push([]);
+            }
+            grid[rowIndex][i] = meals[i];
+        }
+        return grid;
+    }
+    makegridfromobj(obj) {
+        let grid = [];
+        grid.push([]);
+
+        let perrow = 4;
+        let rowIndex = 0;
+        Object.keys(obj).map((key, i) => {
+            if (i % perrow === 0 && i > 0) {
+                rowIndex++;
+                grid.push([]);
+            }
+            grid[rowIndex][i] = obj[key];
+        });
+        return grid;
+    }
+
     render() {
         if (!this.state.meals) return <div/>;
         return (
@@ -156,20 +208,27 @@ export class Home extends Component {
                             </Accordion.Toggle>
                             <Accordion.Collapse eventKey="0">
                                 <Container id="managefoodslist">
-                                    {this.state.meals.map((meal, i) => {
-                                        return (
-                                            <Row key={i} id="managefoodslistitem">
-                                                <Col>
-                                                <p>
-                                                    {meal.name} ({meal.types.join()})
-                                                </p>
+                                    {this.makegrid(this.state.meals).map((row, i) => 
+                                        <Row key={i}>
+                                            {row.map((meal, j) => 
+                                                <Col key={j}>
+                                                    <Card>
+                                                        <Card.Body>
+                                                            <Card.Title>{meal.name}</Card.Title>
+                                                            <Card.Subtitle>
+                                                                {meal.types.join()}
+                                                            </Card.Subtitle>
+                                                            {meal.ingredients.map((ing, k) => {
+                                                                if (ing.food) return <Card.Text id="mealsmanagementitemingredient" key={k}>{ing.food.name}: {ing.amountg}g</Card.Text>
+                                                                return <Card.Text id="mealsmanagementitemingredient" key={k}>{ing.type}: {ing.amountg}g</Card.Text>
+                                                            })}
+                                                            <Button variant="danger" block size="sm" onClick={() => { this.onDeleteMeal(i)}}>-</Button>
+                                                        </Card.Body>
+                                                    </Card>
                                                 </Col>
-                                                <Col md="auto">
-                                                    <Button variant="danger" md="auto" size="sm" onClick={() => {this.onDeleteMeal(i)}}>-</Button>
-                                                </Col>
-                                            </Row>
-                                        )
-                                    })}
+                                            )}
+                                        </Row>
+                                    )}
                                 </Container>
                             </Accordion.Collapse>
                         </Card>
@@ -179,6 +238,41 @@ export class Home extends Component {
                             </Accordion.Toggle>
                             <Accordion.Collapse eventKey="1">
                                 <CreateFood meals={this.state.meals} ingredients={this.state.ingredients} visible={true} addFood={this.addOwnFood} saveIngredient={this.saveOwnIngredient} />
+                            </Accordion.Collapse>
+                        </Card>
+                        <Card>
+                            <Accordion.Toggle as={Card.Header} eventKey="2">
+                                Manage Ingredients
+                            </Accordion.Toggle>
+                            <Accordion.Collapse eventKey="2">
+                                <Container id="managefoodslist">
+                                    {this.makegridfromobj(this.state.ingredients).map((row, i) =>
+                                        <Row key={i}>
+                                            {row.map((ingredient, j) =>
+                                                <Col key={j}>
+                                                    <Card>
+                                                        <Card.Body>
+                                                            <Card.Title>{ingredient.name}</Card.Title>
+                                                            <Card.Subtitle>
+                                                                {ingredient.type}
+                                                            </Card.Subtitle>
+                                                            <Card.Text>{ingredient.cal}kcal/100g</Card.Text>
+                                                            <Button variant="danger" block size="sm" onClick={() => { this.onDeleteIngredient(ingredient)}}>-</Button>
+                                                        </Card.Body>
+                                                    </Card>
+                                                </Col>
+                                            )}
+                                        </Row>
+                                    )}
+                                </Container>
+                            </Accordion.Collapse>
+                        </Card>
+                        <Card>
+                            <Accordion.Toggle as={Card.Header} eventKey="3">
+                                Create Ingredient
+                            </Accordion.Toggle>
+                            <Accordion.Collapse eventKey="3">
+                                <CreateIngredient saveIngredient={this.saveOwnIngredient}/>
                             </Accordion.Collapse>
                         </Card>
                     </Accordion>
@@ -197,7 +291,7 @@ export class Home extends Component {
                         <Row className="justify-content-md-center">
                             <Col>
                                 <Dropdown>
-                                    <Dropdown.Toggle variant="success" id="dropdown-basic" active>
+                                    <Dropdown.Toggle variant="success" id="dropdown-basic">
                                         Add Meal
                                     </Dropdown.Toggle>
 
@@ -223,9 +317,15 @@ export class Home extends Component {
                 <div id="calculate">
                     <Button variant="primary" onClick={this.calculatePlan}>Calculate</Button>
                 </div>
-                <WeekPlan weekplan={this.state.weekplan} meals={this.state.meals} ingredients={this.state.ingredients} />
+                <div ref={ref}>
+                    <WeekPlan weekplan={this.state.weekplan} meals={this.state.meals} ingredients={this.state.ingredients} />
+                </div>
             </div>
         );
-        //<Col md="auto"><Button variant="success">+</Button></Col>
     }
 }
+/*
+    <Pdf targetRef={ref} filename="weekmenu.pdf" options={options} x={.5} y={.5} scale={0.8}>
+        {({ toPdf }) => <button onClick={toPdf}>Generate Pdf</button>}
+    </Pdf>
+ */

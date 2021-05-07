@@ -136,11 +136,28 @@ export class CreateFood extends Component {
                     <Form.Group>
                         <Form.Control required placeholder="Meal name" value={this.state.mealname} onChange={this.onChangedMealName} />
                     </Form.Group>
+                    <Form.Row>
+                        <Form.Label>
+                            Meal type(s):
+                    </Form.Label>
+                        <Form.Group as={Col}>
+                            <Form.Check label="Breakfast" onChange={(e) => this.onSetType("breakfast", e.target.checked)} />
+                        </Form.Group>
+                        <Form.Group as={Col}>
+                            <Form.Check label="Lunch" onChange={(e) => this.onSetType("lunch", e.target.checked)} />
+                        </Form.Group>
+                        <Form.Group as={Col}>
+                            <Form.Check label="Dinner" onChange={(e) => this.onSetType("dinner", e.target.checked)} />
+                        </Form.Group>
+                        <Form.Group as={Col}>
+                            <Form.Check label="Supper" onChange={(e) => this.onSetType("supper", e.target.checked)} />
+                        </Form.Group>
+                    </Form.Row>
                     {this.state.ingredients.map((ingredient, i) =>
                         <Form.Row key={i}>
                             <Form.Group as={Col}>
                                 <Dropdown>
-                                    <Dropdown.Toggle variant="success" active>
+                                    <Dropdown.Toggle variant="success">
                                         Existing ingredients
                                         </Dropdown.Toggle>
 
@@ -162,11 +179,11 @@ export class CreateFood extends Component {
                             </Form.Group>
                             <Form.Group as={Col}>
                                 <Dropdown>
-                                    <Dropdown.Toggle variant="warning" active>
+                                    <Dropdown.Toggle variant="warning">
                                         Type: {ingredient.type}
                                         </Dropdown.Toggle>
 
-                                    <Dropdown.Menu>
+                                    <Dropdown.Menu id="existingingredientsdropdown">
                                         {Object.keys(FoodTypes).map((prop, j) => {
                                             return <Dropdown.Item key={j} onClick={() => this.onChangedIngredientType(prop, i)}>{prop}</Dropdown.Item>
                                         })}
@@ -185,28 +202,11 @@ export class CreateFood extends Component {
                             </Form.Group>
                         </Form.Row>
                     )}
-
-                    <Button variant="success" onClick={this.addIngredient}>
-                        Add ingredient
-                    </Button>
-
-                    <Form.Row>
-                        <Form.Label>
-                            Meal type(s):
-                        </Form.Label>
-                        <Form.Group as={Col}>
-                            <Form.Check label="Breakfast" onChange={(e) => this.onSetType("breakfast", e.target.checked)} />
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Check label="Lunch" onChange={(e) => this.onSetType("lunch", e.target.checked)} />
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Check label="Dinner" onChange={(e) => this.onSetType("dinner", e.target.checked)} />
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Check label="Supper" onChange={(e) => this.onSetType("supper", e.target.checked)} />
-                        </Form.Group>
-                     </Form.Row>
+                    <Form.Group>
+                        <Button variant="success" onClick={this.addIngredient}>
+                                Add ingredient
+                        </Button>
+                    </Form.Group>
 
                     <Button variant="warning" type="submit" size="lg">
                         Create Meal
