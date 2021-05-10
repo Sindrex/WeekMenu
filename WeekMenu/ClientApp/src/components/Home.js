@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import Pdf from "react-to-pdf";
-import { Button, Dropdown, Col, Row, Container, Card, Accordion } from 'react-bootstrap';
-import { Foods, Meals, MakeWeekPlan, GetWeekPlanObject } from './Food';
+//import Pdf from "react-to-pdf";
+import { Button, Dropdown, Col, Row, Container, Card, Accordion, FormControl } from 'react-bootstrap';
+import { Foods, Meals, MakeWeekPlan, GetWeekPlanObject, FillWeekPlan, MealTypes } from './Food';
 import { WeekPlan } from './WeekPlan';
 import { CreateFood } from './CreateFood';
 import { CreateIngredient } from './CreateIngredient';
@@ -13,11 +13,12 @@ const manCal = 2500;
 
 //pdf stuff
 const ref = React.createRef();
+/*
 const options = {
     orientation: 'landscape',
     unit: 'in',
     format: [12000, 12000]
-};
+};*/
 
 export class Home extends Component {
     static displayName = Home.name;
@@ -28,10 +29,12 @@ export class Home extends Component {
         fourthmeal: true,
         weekplan: null,
 
-        creatingOwnFood: false,
+        customCaloriesOn: false,
 
         meals: null,
-        ingredients: null
+        ingredients: null,
+
+        selectedFoodError: ""
     }
 
     componentDidMount() {
@@ -43,9 +46,24 @@ export class Home extends Component {
     }
 
     onChangeCalorieSetting = (e, n) => {
+        console.log("onChangeCalorieSetting!");
         this.setState({
             selectedcaloriesstr: e,
-            selectedcalories: n
+            selectedcalories: n,
+            customCaloriesOn: false
+        });
+    }
+
+    onSetCalorieSettingCustom = (isOn) => {
+        this.setState({
+            selectedcaloriesstr: "Custom",
+            customCaloriesOn: isOn,
+        });
+    }
+
+    onChangeCalorieSettingCustom = (e) => {
+        this.setState({
+            selectedcalories: e.target.value,
         });
     }
 
@@ -84,16 +102,43 @@ export class Home extends Component {
     }
 
     calculatePlan = () => {
+        let dinners = this.state.selectedfoodlist.filter(meal => meal.types.includes(MealTypes.dinner));
+        let others = this.state.selectedfoodlist.filter(meal => !meal.types.includes(MealTypes.dinner));
+        if (!this.state.weekplan || this.state.selectedfoodlist.length <= 0 || dinners.length <= 0 || others.length < 0) {
+            this.setState({
+                selectedFoodError: "You must include at least 1 dinner and 1 not-dinner."
+            });
+            return;
+        }
+
         let plan = MakeWeekPlan(this.state.selectedcalories, this.state.selectedfoodlist, this.state.fourthmeal, this.state.ingredients);
         console.log(plan);
         this.setState({
-            weekplan: plan
+            weekplan: plan,
+            selectedFoodError: ""
         });
     }
+    FillPlan = () => {
+        let dinners = this.state.selectedfoodlist.filter(meal => meal.types.includes(MealTypes.dinner));
+        let others = this.state.selectedfoodlist.filter(meal => !meal.types.includes(MealTypes.dinner));
+        if (!this.state.weekplan || this.state.selectedfoodlist.length <= 0 || dinners.length <= 0 || others.length < 0) {
+            this.setState({
+                selectedFoodError: "You must include at least 1 dinner and 1 not-dinner."
+            });
+            return;
+        }
 
-    startCreateOwnFood = () => {
+        let plan = FillWeekPlan(this.state.weekplan, this.state.selectedcalories, this.state.selectedfoodlist, this.state.fourthmeal, this.state.ingredients);
+        console.log(plan);
         this.setState({
-            creatingOwnFood: !this.state.creatingOwnFood
+            weekplan: plan,
+            selectedFoodError: ""
+        });
+    }
+    SetPlan = (plan) => {
+        console.log(plan);
+        this.setState({
+            weekplan: plan,
         });
     }
 
@@ -139,8 +184,10 @@ export class Home extends Component {
     }
 
     onDeleteIngredient = (key) => {
+        console.log(key);
         let ingredients = this.state.ingredients;
-        delete ingredients[key];
+        let ingredientKey = key.name.toLowerCase().replace(' ', '_');
+        delete ingredients[ingredientKey];
 
         this.setState({
             ingredients: ingredients
@@ -193,8 +240,22 @@ export class Home extends Component {
                         <Dropdown.Menu>
                             <Dropdown.Item onClick={() => this.onChangeCalorieSetting(`Man (${manCal})`, manCal)}>Man ({manCal})</Dropdown.Item>
                             <Dropdown.Item onClick={() => this.onChangeCalorieSetting(`Woman (${womanCal})`, womanCal)}>Woman ({womanCal})</Dropdown.Item>
+                            <Dropdown.Item onClick={() => this.onSetCalorieSettingCustom(true)}>Custom</Dropdown.Item>
                         </Dropdown.Menu>
                     </Dropdown>
+                    {this.state.customCaloriesOn ?
+                        <div id="calorieamountinput">
+                            <FormControl
+                                type="number"
+                                placeholder="Calories"
+                                aria-label="Calories"
+                                aria-describedby="basic-addon1"
+                                value={this.state.customCalories}
+                                onChange={this.onChangeCalorieSettingCustom}
+                            />
+                        </div>
+                        : <div />
+                    }
                 </div>
                 <div id="fourthmeal">
                     <p>Include a 4th daily meal (Supper or evening/night meal)?</p>
@@ -257,7 +318,7 @@ export class Home extends Component {
                                                                 {ingredient.type}
                                                             </Card.Subtitle>
                                                             <Card.Text>{ingredient.cal}kcal/100g</Card.Text>
-                                                            <Button variant="danger" block size="sm" onClick={() => { this.onDeleteIngredient(ingredient)}}>-</Button>
+                                                            <Button variant="danger" block size="sm" onClick={() => this.onDeleteIngredient(ingredient)}>-</Button>
                                                         </Card.Body>
                                                     </Card>
                                                 </Col>
@@ -316,9 +377,15 @@ export class Home extends Component {
                 </div>
                 <div id="calculate">
                     <Button variant="primary" onClick={this.calculatePlan}>Calculate</Button>
+                    <Button variant="primary" onClick={this.FillPlan}>Fill</Button>
+                    {this.state.selectedFoodError ? 
+                        <p>{this.state.selectedFoodError}</p>
+                        :
+                        <div/>
+                    }
                 </div>
                 <div ref={ref}>
-                    <WeekPlan weekplan={this.state.weekplan} meals={this.state.meals} ingredients={this.state.ingredients} />
+                    <WeekPlan weekplan={this.state.weekplan} meals={this.state.meals} ingredients={this.state.ingredients} SetPlan={this.SetPlan} />
                 </div>
             </div>
         );

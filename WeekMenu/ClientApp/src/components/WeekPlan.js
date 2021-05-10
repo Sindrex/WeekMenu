@@ -68,6 +68,8 @@ export class WeekPlan extends Component {
         this.setState({
             weekplan: tempplan
         });
+
+        this.props.SetPlan(tempplan);
     }
 
     onAddFood = (meal) => {
@@ -82,6 +84,8 @@ export class WeekPlan extends Component {
         this.setState({
             weekplan: tempplan
         });
+
+        this.props.SetPlan(tempplan);
     }
 
     deleteFood = (day, meal, index) => {
@@ -95,12 +99,17 @@ export class WeekPlan extends Component {
         this.setState({
             weekplan: tempplan
         });
+
+        this.props.SetPlan(tempplan);
     }
 
     clearPlan = () => {
+        let tempplan = GetWeekPlanObject();
         this.setState({
-            weekplan: GetWeekPlanObject()
+            weekplan: tempplan
         });
+
+        this.props.SetPlan(tempplan);
     }
 
     editFood = (day, meal, j) => {
@@ -111,6 +120,8 @@ export class WeekPlan extends Component {
         this.setState({
             weekplan: tempplan
         });
+
+        this.props.SetPlan(tempplan);
     }
 
     addIngredientToMeal = (day, meal, j) => {
@@ -121,6 +132,8 @@ export class WeekPlan extends Component {
         this.setState({
             weekplan: tempplan
         });
+
+        this.props.SetPlan(tempplan);
     }
 
     removeIngredientToMeal = (day, meal, j, k) => {
@@ -133,6 +146,8 @@ export class WeekPlan extends Component {
         this.setState({
             weekplan: tempplan
         });
+
+        this.props.SetPlan(tempplan);
     }
 
     saveEditFood = (day, meal, j, event) => {
@@ -143,7 +158,7 @@ export class WeekPlan extends Component {
         sourceFood["editing"] = false;
 
         sourceFood.ingredients.map((item, i) => {
-            let foodname = event.target.elements["ingredientselect-" + i].value.toLowerCase().replace(' ', '_');
+            let foodname = event.target.elements["ingredientselect-" + i].value.toLowerCase().replaceAll(' ', '_');
             item.food = this.state.ingredients[foodname];
             item.amountg = parseInt(event.target.elements["ingredientamount-" + i].value);
         });
@@ -156,6 +171,8 @@ export class WeekPlan extends Component {
         this.setState({
             weekplan: tempplan
         });
+
+        this.props.SetPlan(tempplan);
     }
 
     render() {
@@ -181,8 +198,9 @@ export class WeekPlan extends Component {
                             <Col id="weekplancol" xs={1}>
                                 <p><b>{day}: {Math.round(this.state.weekplan[day].cal)}kcal</b></p>
                             </Col>
-                            {Object.keys(MealTypes).map((meal, m) =>
-                                <Col id="weekplancol" key={m}>
+                            {Object.keys(this.state.weekplan[day]).map((meal, m) => {
+                                if (meal === "cal") return;
+                                return (<Col id="weekplancol" key={m}>
                                     <p>{meal}: {Math.round(this.state.weekplan[day][meal].cal)}kcal</p>
                                     <Droppable droppableId={day + "-" + meal}>
                                         {provided => (
@@ -199,8 +217,8 @@ export class WeekPlan extends Component {
                                                                 {...provided.draggableProps}
                                                                 {...provided.dragHandleProps}
                                                             >
-                                                                {!item.editing ? 
-                                                                    <Card>
+                                                                {!item.editing ?
+                                                                    <Card id="weekplancard">
                                                                         <Card.Body>
                                                                             <Row>
                                                                                 <Col>
@@ -211,49 +229,49 @@ export class WeekPlan extends Component {
                                                                                 </Col>
                                                                             </Row>
                                                                             <Card.Subtitle>({Math.round(item.cal)}kcal)</Card.Subtitle>
-                                                                                {item.ingredients.map((ingredient, k) =>
-                                                                                    <p id="weekplanmealingredient" key={k}>{ingredient.food.name}: {ingredient.amountg}g</p>
-                                                                                )}
+                                                                            {item.ingredients.map((ingredient, k) =>
+                                                                                <p id="weekplanmealingredient" key={k}>{ingredient.food.name}: {ingredient.amountg}g</p>
+                                                                            )}
                                                                         </Card.Body>
                                                                     </Card>
                                                                     :
                                                                     <Card>
                                                                         <Card.Body>
                                                                             <Form onSubmit={(e) => this.saveEditFood(day, meal, j, e)}>
-                                                                            <Row>
-                                                                                <Col>
-                                                                                    <Card.Title style={{ 'fontSize': '1rem' }}>{item.name}</Card.Title>
-                                                                                </Col>
-                                                                                <Col md="auto">
-                                                                                    <Button variant="success" type="submit" size="sm">Save</Button>
-                                                                                </Col>
-                                                                            </Row>
-                                                                            <Card.Subtitle>({Math.round(item.cal)}kcal)</Card.Subtitle>
-                                                                            {item.ingredients.map((ingredient, k) =>
-                                                                                <div key={k}>
-                                                                                    <Form.Row>
-                                                                                        <Form.Group as={Col}>
-                                                                                            <Form.Control as="select" name={"ingredientselect-" + k}>
-                                                                                            <option>{ingredient.food.name}</option>
-                                                                                            {Object.keys(this.state.ingredients).map((ing, l) => {
-                                                                                                //if (this.state.ingredients[ing].type !== ingredient.food.type) return;
-                                                                                                if (this.state.ingredients[ing].name === ingredient.food.name) return;
-                                                                                                return <option key={l} item={this.state.ingredients[ing]}>{this.state.ingredients[ing].name}</option>
-                                                                                            })}
-                                                                                            </Form.Control>
-                                                                                        </Form.Group>
-                                                                                        <Form.Group as={Col}>
-                                                                                            <Form.Control type="number" name={"ingredientamount-" + k} defaultValue={ingredient.amountg} />
-                                                                                        </Form.Group>
-                                                                                        <Form.Group as={Col} md="auto">
-                                                                                            <Button variant="danger" md="auto" size="sm" onClick={() => this.removeIngredientToMeal(day, meal, j, k)}>-</Button>
-                                                                                        </Form.Group>
-                                                                                    </Form.Row>
-                                                                                </div>
-                                                                            )}
+                                                                                <Row>
+                                                                                    <Col>
+                                                                                        <Card.Title style={{ 'fontSize': '1rem' }}>{item.name}</Card.Title>
+                                                                                    </Col>
+                                                                                    <Col md="auto">
+                                                                                        <Button variant="success" type="submit" size="sm">Save</Button>
+                                                                                    </Col>
+                                                                                </Row>
+                                                                                <Card.Subtitle>({Math.round(item.cal)}kcal)</Card.Subtitle>
+                                                                                {item.ingredients.map((ingredient, k) =>
+                                                                                    <div key={k}>
+                                                                                        <Form.Row>
+                                                                                            <Form.Group as={Col}>
+                                                                                                <Form.Control as="select" name={"ingredientselect-" + k}>
+                                                                                                    <option>{ingredient.food.name}</option>
+                                                                                                    {Object.keys(this.state.ingredients).map((ing, l) => {
+                                                                                                        //if (this.state.ingredients[ing].type !== ingredient.food.type) return;
+                                                                                                        if (this.state.ingredients[ing].name === ingredient.food.name) return;
+                                                                                                        return <option key={l} item={this.state.ingredients[ing]}>{this.state.ingredients[ing].name}</option>
+                                                                                                    })}
+                                                                                                </Form.Control>
+                                                                                            </Form.Group>
+                                                                                            <Form.Group as={Col}>
+                                                                                                <Form.Control type="number" name={"ingredientamount-" + k} defaultValue={ingredient.amountg} />
+                                                                                            </Form.Group>
+                                                                                            <Form.Group as={Col} md="auto">
+                                                                                                <Button variant="danger" md="auto" size="sm" onClick={() => this.removeIngredientToMeal(day, meal, j, k)}>-</Button>
+                                                                                            </Form.Group>
+                                                                                        </Form.Row>
+                                                                                    </div>
+                                                                                )}
 
-                                                                            <Button variant="success" block size="sm" onClick={() => this.addIngredientToMeal(day, meal, j)}>+</Button>
-                                                                            <Button variant="danger" block size="sm" onClick={() => this.deleteFood(day, meal, j)}>Delete meal</Button>
+                                                                                <Button variant="success" block size="sm" onClick={() => this.addIngredientToMeal(day, meal, j)}>+</Button>
+                                                                                <Button variant="danger" block size="sm" onClick={() => this.deleteFood(day, meal, j)}>Delete meal</Button>
                                                                             </Form>
                                                                         </Card.Body>
                                                                     </Card>
@@ -266,8 +284,8 @@ export class WeekPlan extends Component {
                                             </div>
                                         )}
                                     </Droppable>
-                                </Col>
-                            )}
+                                </Col>)
+                            })}
                         </Row>
                     ) : <div />
                     }

@@ -109,14 +109,24 @@ export class CreateFood extends Component {
 
         let ingredients = [];
         this.state.ingredients.map((ingredient) => {
-            let newIngredient = {
-                food: {
-                    name: ingredient.name,
-                    type: ingredient.type,
-                    cal: ingredient.cal
-                },
-                amountg: ingredient.amountg
-            };
+            let newIngredient = null;
+            if (ingredient.name) {
+                newIngredient = {
+                    food: {
+                        name: ingredient.name,
+                        type: ingredient.type,
+                        cal: ingredient.cal
+                    },
+                    amountg: ingredient.amountg
+                };
+            }
+            else {
+                newIngredient = {
+                    food: null,
+                    amountg: ingredient.amountg,
+                    type: ingredient.type
+                };
+            }
             ingredients.push(newIngredient);
         });
 
@@ -126,6 +136,17 @@ export class CreateFood extends Component {
             ingredients: ingredients
         };
         this.props.addFood(meal);
+
+        this.setState({
+            mealname: "",
+            types: [],
+            ingredients: [{ name: "", cal: "", amountg: "", type: "other" }]
+        });
+
+        this.onSetType("breakfast", false);
+        this.onSetType("lunch", false);
+        this.onSetType("dinner", false);
+        this.onSetType("supper", false);
     }
 
     render() {
@@ -134,7 +155,7 @@ export class CreateFood extends Component {
             <Container id="createfood">
                 <Form onSubmit={this.submit} autoComplete="off">
                     <Form.Group>
-                        <Form.Control required placeholder="Meal name" value={this.state.mealname} onChange={this.onChangedMealName} />
+                        <Form.Control placeholder="Meal name" value={this.state.mealname} onChange={this.onChangedMealName} required/>
                     </Form.Group>
                     <Form.Row>
                         <Form.Label>
@@ -172,7 +193,7 @@ export class CreateFood extends Component {
                                 <Form.Control placeholder="Ingredient name" value={ingredient.name} onChange={(e) => this.onChangedIngredientName(e, i)}/>
                             </Form.Group>
                             <Form.Group as={Col}>
-                                <Form.Control required type="number" placeholder="grams" value={ingredient.amountg} onChange={(e) => this.onChangedIngredientGrams(e, i)}/>
+                                <Form.Control type="number" placeholder="grams" value={ingredient.amountg} onChange={(e) => this.onChangedIngredientGrams(e, i)} required/>
                             </Form.Group>
                             <Form.Group as={Col}>
                                 <Form.Control type="number" placeholder="kcal/100g" value={ingredient.cal} onChange={(e) => this.onChangedIngredientKcal(e, i)}/>

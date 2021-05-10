@@ -41,6 +41,12 @@ export class CreateIngredient extends Component {
             cal: this.state.cal
         }
         this.props.saveIngredient(ingredient);
+
+        this.setState({
+            name: "",
+            cal: "",
+            type: FoodTypes.other
+        });
     }
 
     render() {
@@ -49,10 +55,10 @@ export class CreateIngredient extends Component {
                 <Form onSubmit={this.submit} autoComplete="off">
                     <Form.Row>
                         <Form.Group as={Col}>
-                            <Form.Control placeholder="Ingredient name" value={this.state.name} onChange={(e) => this.onChangedIngredientName(e)} />
+                            <Form.Control placeholder="Ingredient name" value={this.state.name} onChange={(e) => this.onChangedIngredientName(e)} required/>
                         </Form.Group>
                         <Form.Group as={Col}>
-                            <Form.Control type="number" placeholder="kcal/100g" value={this.state.cal} onChange={(e) => this.onChangedIngredientKcal(e)} />
+                            <Form.Control type="number" placeholder="kcal/100g" value={this.state.cal} onChange={(e) => this.onChangedIngredientKcal(e)} required/>
                         </Form.Group>
                         <Form.Group as={Col} md="auto">
                             <Dropdown>
