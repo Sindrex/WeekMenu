@@ -17,7 +17,8 @@
 }
 #foodlist {
     margin: auto;
-    width: 30%;
+    width: 70%;
+    padding-top: 10px;
 }
 #foodlistitem {
     border-radius: 10px;
@@ -29,9 +30,8 @@
     padding-top: 2px;
 }
 #calculate {
-    margin: 50px;
-    margin-right: 20%;
-    text-align: right;
+    margin: auto;
+    text-align: center;
 }
 #managefoods{
     width: 70%;
@@ -39,7 +39,7 @@
 }
 #managefoodslist{
     /*width: 50%;*/
-    text-align: center;
+    text-align: left;
 }
 p {
     margin: 0px;

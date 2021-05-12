@@ -17,7 +17,8 @@
     "react-scripts": "^3.4.1",
     "react-to-pdf": "0.0.13",
     "reactstrap": "^8.4.1",
-    "rimraf": "^2.6.2"
+    "rimraf": "^2.6.2",
+    "styled-components": "^5.3.0"
   },
   "devDependencies": {
     "ajv": "^6.9.1",

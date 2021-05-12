@@ -271,7 +271,7 @@ export class WeekPlan extends Component {
                                                                                 )}
 
                                                                                 <Button variant="success" block size="sm" onClick={() => this.addIngredientToMeal(day, meal, j)}>+</Button>
-                                                                                <Button variant="danger" block size="sm" onClick={() => this.deleteFood(day, meal, j)}>Delete meal</Button>
+                                                                                <Button variant="danger" block size="sm" onClick={() => this.deleteFood(day, meal, j)}>Remove meal</Button>
                                                                             </Form>
                                                                         </Card.Body>
                                                                     </Card>

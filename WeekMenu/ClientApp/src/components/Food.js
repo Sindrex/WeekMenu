@@ -154,7 +154,7 @@ export function FillWeekPlan(plan, dailycal, selmeals, fourthmeal, ingredients) 
     return plan;
 }
 
-export function MakeWeekPlan(dailycal, selmeals, fourthmeal, ingredients) {
+export function MakeWeekPlan(dailycal, selmeals, fourthmeal, ingredients, percentdinner) {
     let dinners = selmeals.filter(meal => meal.types.includes(MealTypes.dinner));
     let lunches = selmeals.filter(meal => meal.types.includes(MealTypes.lunch));
     let breakfasts = selmeals.filter(meal => meal.types.includes(MealTypes.breakfast));
@@ -172,9 +172,18 @@ export function MakeWeekPlan(dailycal, selmeals, fourthmeal, ingredients) {
         diversifier++;
 
         dinneri = Math.floor(randomizer() * dinners.length);
-
         let dinner = Clone(dinners[dinneri]);
-        let dinnerCal = GetMealCal(dinner, ingredients);
+        let dinnerCal = 0;
+
+        if (percentdinner) {
+            let tempdinnercal = dailycal * percentdinner/100;
+            dinnerCal = GetMealCal(dinner, ingredients, tempdinnercal);
+
+        }
+        else {
+            dinnerCal = GetMealCal(dinner, ingredients);
+        }
+
         dinner["cal"] = dinnerCal;
         plan[day].dinner.push(dinner);
         plan[day].dinner["cal"] = dinnerCal;
@@ -256,15 +265,14 @@ export function MakeWeekPlan(dailycal, selmeals, fourthmeal, ingredients) {
 
 var diversifier = 0;
 
-export function GetMealCal(meal, ingredients) {
+export function GetMealCal(meal, ingredients, percentdinnercal = null) {
     let res = 0;
+
+    //Set food that's just typed (random)
     let randomizer = Random(meal.name + diversifier);
     diversifier++;
     for (let i = 0; i < meal.ingredients.length; i++) {
-        if (meal.ingredients[i].food) {
-            res += meal.ingredients[i].food.cal / 100 * meal.ingredients[i].amountg;
-        }
-        else if (meal.ingredients[i].type) {
+        if (meal.ingredients[i].type) {
             let foodoftype = [];
             Object.keys(ingredients).map((food) => {
                 if (ingredients[food].type === meal.ingredients[i].type) {
@@ -273,12 +281,38 @@ export function GetMealCal(meal, ingredients) {
                 return 0;
             });
             let randfood = Math.floor(randomizer() * foodoftype.length);
-            //let randfood = Math.floor(Math.random() * foodoftype.length);
             meal.ingredients[i].food = foodoftype[randfood];
+
+        }
+    }
+
+    //set percentdinnerrate (if applicable)
+    if (percentdinnercal) SetCalRate(meal); //set rate based on default amountg
+
+    for (let i = 0; i < meal.ingredients.length; i++) {
+        if (percentdinnercal) {
+            let ingredCal = meal.ingredients[i].rate * percentdinnercal;
+            res += ingredCal;
+            meal.ingredients[i].amountg = Math.round((ingredCal) * 100 / meal.ingredients[i].food.cal);
+        }
+        else {
             res += meal.ingredients[i].food.cal / 100 * meal.ingredients[i].amountg;
         }
     }
     return res;
+}
+
+function SetCalRate(meal) {
+    let sumcal = 0;
+    for (let i = 0; i < meal.ingredients.length; i++) {
+        let mycal = meal.ingredients[i].food.cal / 100 * meal.ingredients[i].amountg;
+        sumcal += mycal;
+    }
+    for (let i = 0; i < meal.ingredients.length; i++) {
+        let mycal = meal.ingredients[i].food.cal / 100 * meal.ingredients[i].amountg;
+        meal.ingredients[i]["rate"] = mycal / sumcal;
+
+    }
 }
 
 export const Days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
@@ -312,7 +346,10 @@ export const FoodTypes = {
     sauce: "sauce",
     baked: "baked",
 
+    sweet_fibertopping: "sweet fibertopping",
+    sweet_drink: "sweet drink",
     candy: "sweet",
+    alcohol: "alcohol",
 
     other: "other",
     taco: "taco"
@@ -334,7 +371,7 @@ export const Foods = { //cal (kcal) = per 100g
     salami: { name: "Salami", type: FoodTypes.fibertopping, cal: 420 },
     brown_cheese: { name: "Brown Cheese", type: FoodTypes.fibertopping, cal: 440 },
     strawberry_jam: { name: "Strawberry Jam", type: FoodTypes.fibertopping, cal: 130 },
-    nugatti_spread: { name: "Nugatti Spread", type: FoodTypes.fibertopping, cal: 525 },
+    nugatti_spread: { name: "Nugatti Spread", type: FoodTypes.sweet_fibertopping, cal: 525 },
 
     //other
     yoghurt: { name: "Yoghurt", type: FoodTypes.diary, cal: 70 },
@@ -352,11 +389,11 @@ export const Foods = { //cal (kcal) = per 100g
     milk: { name: "Milk", type: FoodTypes.drink, cal: 41 },
     apple_juice: { name: "Apple Juice", type: FoodTypes.drink, cal: 42 },
     orange_juice: { name: "Orange Juice", type: FoodTypes.drink, cal: 43 },
-    lemonade: { name: "Lemonade", type: FoodTypes.drink, cal: 43 },
-    soda: { name: "Soda", type: FoodTypes.drink, cal: 42 },
-    iced_coffee: { name: "Iced Coffee", type: FoodTypes.drink, cal: 58 },
-    wine: { name: "Wine", type: FoodTypes.drink, cal: 70 },
-    beer: { name: "Beer", type: FoodTypes.drink, cal: 40 },
+    lemonade: { name: "Lemonade", type: FoodTypes.sweet_drink, cal: 43 },
+    soda: { name: "Soda", type: FoodTypes.sweet_drink, cal: 42 },
+    iced_coffee: { name: "Iced Coffee", type: FoodTypes.sweet_drink, cal: 58 },
+    wine: { name: "Wine", type: FoodTypes.alcohol, cal: 70 },
+    beer: { name: "Beer", type: FoodTypes.alcohol, cal: 40 },
 
     //Meats
     minced_meat_cattle: { name: "Minced Meat Cattle", type: FoodTypes.meat, cal: 288 },
@@ -429,25 +466,25 @@ export const Meals = [
     },
     {
         name: "Taco", types: [MealTypes.dinner], ingredients: [
-            { food: Foods.cheese, amountg: 30 },
-            { food: Foods.tortilla, amountg: 126 },
-            { food: Foods.minced_meat_cattle, amountg: 150 },
-            { food: Foods.cucumber, amountg: 60 },
-            { food: Foods.corn, amountg: 30 },]
+            { food: Foods.cheese, amountg: 30, rate: 0.27 },
+            { food: Foods.tortilla, amountg: 126, rate: 0.81 },
+            { food: Foods.minced_meat_cattle, amountg: 150, rate: 1.09 },
+            { food: Foods.cucumber, amountg: 60, rate: 0.02 },
+            { food: Foods.corn, amountg: 30, rate: 0.06 },]
     },
     {
         name: "Lasagna", types: [MealTypes.dinner], ingredients: [
-            { food: Foods.cheese, amountg: 60 },
-            { food: Foods.pasta, amountg: 90 },
-            { food: Foods.minced_meat_cattle, amountg: 150 },
-            { food: Foods.milk, amountg: 225 },]
+            { food: Foods.cheese, amountg: 60, rate: 0.4 },
+            { food: Foods.pasta, amountg: 90, rate: 0.21 },
+            { food: Foods.minced_meat_cattle, amountg: 150, rate: 0.82 },
+            { food: Foods.milk, amountg: 225, rate: 0.18 },]
     },
     {
         name: "Salmon and veggies", types: [MealTypes.dinner], ingredients: [
-            { food: Foods.salmon, amountg: 187 },
-            { food: Foods.potato, amountg: 150 },
-            { food: Foods.carrot, amountg: 112 },
-            { food: null, amountg: 225, type: FoodTypes.greens },]
+            { food: Foods.salmon, amountg: 187, rate: 0.69 },
+            { food: Foods.potato, amountg: 150, rate: 0.17 },
+            { food: Foods.carrot, amountg: 112, rate: 0.06 },
+            { food: null, amountg: 225, type: FoodTypes.greens, rate: 0.10 },]
     },
     {
         name: "Spring rolls", types: [MealTypes.dinner], ingredients: [
@@ -506,7 +543,7 @@ export const Meals = [
             { food: Foods.brownies, amountg: 120 },]
     },
     {
-        name: "Unsorted Candy (100g", types: [MealTypes.dessert], ingredients: [
+        name: "Unsorted Candy (100g)", types: [MealTypes.dessert], ingredients: [
             { food: Foods.unsorted_candy, amountg: 100 },]
     },
     {
