@@ -1,2 +1,2 @@
 # WeekMenu
-Weekly meal planner
+Weekly meal planner hosted at https://weekmenutm.herokuapp.com/. Pure clientside application using React.
