@@ -161,6 +161,7 @@ export class WeekPlan extends Component {
             let foodname = event.target.elements["ingredientselect-" + i].value.toLowerCase().replaceAll(' ', '_');
             item.food = this.state.ingredients[foodname];
             item.amountg = parseInt(event.target.elements["ingredientamount-" + i].value);
+            if (item.type) delete item.type;
         });
 
         sourceFood.cal = GetMealCal(sourceFood, this.state.ingredients);

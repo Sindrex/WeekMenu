@@ -9,6 +9,7 @@ import { CreateIngredient } from './CreateIngredient';
 import { StyledComp } from './StyledComp';
 import { ManageIngredients } from './ManageIngredients';
 import { ManageMeals } from './ManageMeals';
+import { Breathe } from './StyledAnimation/Breathe'
 
 import './Home.css';
 
@@ -355,11 +356,13 @@ export class Home extends Component {
                 <div ref={ref}>
                     <WeekPlan weekplan={this.state.weekplan} meals={this.state.meals} ingredients={this.state.ingredients} SetPlan={this.SetPlan} />
                 </div>
-                <StyledComp/>
+                <StyledComp />
             </div>
         );
     }
 }
+
+//<Breathe/>
 /*
     <Pdf targetRef={ref} filename="weekmenu.pdf" options={options} x={.5} y={.5} scale={0.8}>
         {({ toPdf }) => <button onClick={toPdf}>Generate Pdf</button>}

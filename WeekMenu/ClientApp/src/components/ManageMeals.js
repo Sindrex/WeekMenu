@@ -7,8 +7,18 @@ export class ManageMeals extends Component {
     static displayName = ManageMeals.name;
     state = {
         meals: this.props.meals,
-        ingredients: this.props.ingredients
+        ingredients: this.props.ingredients,
+        selectedTypes: []
     };
+
+    componentDidMount() {
+        let arr = [];
+        Object.keys(MealTypes).map((key) => arr.push(MealTypes[key]));
+
+        this.setState({
+            selectedTypes: arr
+        });
+    }
 
     componentDidUpdate(prevProps) {
         if (prevProps.meals !== this.props.meals) {
@@ -80,90 +90,117 @@ export class ManageMeals extends Component {
         });
     }
 
+    selectType = (type, event) => {
+        let selectedTypes = this.state.selectedTypes;
+        let isOn = event.target.checked;
+        if (isOn) selectedTypes.push(type);
+        else selectedTypes = selectedTypes.filter(item => item !== type);
+
+        this.setState({
+            selectedTypes: selectedTypes
+        });
+    }
+
     render() {
         return (
             <Container id="managefoodslist">
-                {makegridfromobj(this.state.meals).map((row, i) =>
-                    <Row key={i}>
-                        {row.map((meal, j) =>
-                        <Col key={j}>
-                            {!meal.editing ?
-                                <Card>
-                                    <Card.Body>
-                                        <Row>
-                                            <Col>
-                                                    <Card.Title style={{ 'fontSize': '1rem' }}>{meal.name}</Card.Title>
-                                            </Col>
-                                            <Col md="auto">
-                                                    <Button variant="warning" onClick={() => this.edit(meal)} size="sm">Edit</Button>
-                                            </Col>
-                                        </Row>
-                                        <Card.Subtitle>
-                                            <i>{meal.types.join()}</i>
-                                        </Card.Subtitle>
-                                        {meal.ingredients.map((ing, k) => {
-                                            if (ing.food) return <Card.Text id="mealsmanagementitemingredient" key={k}>{ing.food.name}: {ing.amountg}g</Card.Text>
-                                            return <Card.Text id="mealsmanagementitemingredient" key={k}>{ing.type}: {ing.amountg}g</Card.Text>
-                                        })}
-                                    </Card.Body>
-                                </Card>
-                                :
-                                <Card>
-                                    <Card.Body>
-                                        <Form onSubmit={(e) => this.saveEdit(meal, e)}>
-                                            <Row>
-                                                <Col>
-                                                    <Card.Title style={{ 'fontSize': '1rem' }}>{meal.name}</Card.Title>
-                                                </Col>
-                                                <Col md="auto">
-                                                    <Button variant="success" type="submit" size="sm">Save</Button>
-                                                </Col>
-                                            </Row>
-                                            <Form.Row>
-                                                {Object.keys(MealTypes).map((type, k) =>
-                                                    <Form.Group as={Col} key={k}>
-                                                        <Form.Check label={type} name={"checked-" + type} defaultChecked={meal.types.includes(type)} />
-                                                    </Form.Group>
-                                                )}
-                                            </Form.Row>
-                                            {meal.ingredients.map((ingredient, k) =>
-                                                <div key={k}>
-                                                    <Form.Row>
-                                                        <Form.Group as={Col}>
-                                                            <Form.Control as="select" name={"ingredientselect-" + k}>
-                                                                {ingredient.food ? <option>{ingredient.food.name}</option> :
-                                                                    <option>type:{ingredient.type}</option>
-                                                                }
-  
-                                                                {Object.keys(this.state.ingredients).map((ing, l) => {
-                                                                    if (ingredient.food && this.state.ingredients[ing].name === ingredient.food.name) return;
-                                                                    return <option key={l}>{this.state.ingredients[ing].name}</option>
-                                                                })}
-
-                                                                {Object.keys(FoodTypes).map((type, l) => {
-                                                                    if (!ingredient.food && ingredient.type === type) return;
-                                                                    return <option key={l}>type:{type}</option>
-                                                                })}
-                                                            </Form.Control>
-                                                        </Form.Group>
-                                                        <Form.Group as={Col}>
-                                                            <Form.Control type="number" name={"ingredientamount-" + k} defaultValue={ingredient.amountg} />
-                                                        </Form.Group>
-                                                        <Form.Group as={Col} md="auto">
-                                                            <Button variant="danger" md="auto" size="sm" onClick={() => this.removeIngredient(meal, k)}>-</Button>
-                                                        </Form.Group>
-                                                    </Form.Row>
-                                                </div>
-                                            )}
-
-                                            <Button variant="success" block size="sm" onClick={() => this.addIngredient(meal)}>+</Button>
-                                            <Button variant="danger" block size="sm" onClick={() => this.delete(meal)}>Delete meal</Button>
-                                        </Form>
-                                    </Card.Body>
-                                </Card>
-                            }
-                        </Col>
+                <Form>
+                    <Row>
+                        {Object.keys(MealTypes).map((key, i) =>
+                            <Form.Check key={i} label={MealTypes[key]} checked={this.state.selectedTypes.includes(MealTypes[key])} onChange={(e) => this.selectType(MealTypes[key], e)} />
                         )}
+                    </Row>
+                </Form>
+                {makegridfromobj(this.state.meals).map((row, i) => 
+                    <Row key={i}>
+                        {row.map((meal, j) => {
+                            let show = false;
+                            meal.types.map((type) => {
+                                if (this.state.selectedTypes.includes(type)) show = true;
+                            });
+                            if (show) {
+                                return (
+                                    <Col key={j}>
+                                        {!meal.editing ?
+                                            <Card>
+                                                <Card.Body>
+                                                    <Row>
+                                                        <Col>
+                                                            <Card.Title style={{ 'fontSize': '1rem' }}>{meal.name}</Card.Title>
+                                                        </Col>
+                                                        <Col md="auto">
+                                                            <Button variant="warning" onClick={() => this.edit(meal)} size="sm">Edit</Button>
+                                                        </Col>
+                                                    </Row>
+                                                    <Card.Subtitle>
+                                                        <i>{meal.types.join()}</i>
+                                                    </Card.Subtitle>
+                                                    {meal.ingredients.map((ing, k) => {
+                                                        if (ing.food) return <Card.Text id="mealsmanagementitemingredient" key={k}>{ing.food.name}: {ing.amountg}g</Card.Text>
+                                                        return <Card.Text id="mealsmanagementitemingredient" key={k}>{ing.type}: {ing.amountg}g</Card.Text>
+                                                    })}
+                                                </Card.Body>
+                                            </Card>
+                                            :
+                                            <Card>
+                                                <Card.Body>
+                                                    <Form onSubmit={(e) => this.saveEdit(meal, e)}>
+                                                        <Row>
+                                                            <Col>
+                                                                <Card.Title style={{ 'fontSize': '1rem' }}>{meal.name}</Card.Title>
+                                                            </Col>
+                                                            <Col md="auto">
+                                                                <Button variant="success" type="submit" size="sm">Save</Button>
+                                                            </Col>
+                                                        </Row>
+                                                        <Form.Row>
+                                                            {Object.keys(MealTypes).map((type, k) =>
+                                                                <Form.Group as={Col} key={k}>
+                                                                    <Form.Check label={type} name={"checked-" + type} defaultChecked={meal.types.includes(type)} />
+                                                                </Form.Group>
+                                                            )}
+                                                        </Form.Row>
+                                                        {meal.ingredients.map((ingredient, k) =>
+                                                            <div key={k}>
+                                                                <Form.Row>
+                                                                    <Form.Group as={Col}>
+                                                                        <Form.Control as="select" name={"ingredientselect-" + k}>
+                                                                            {ingredient.food ? <option>{ingredient.food.name}</option> :
+                                                                                <option>type:{ingredient.type}</option>
+                                                                            }
+
+                                                                            {Object.keys(this.state.ingredients).map((ing, l) => {
+                                                                                if (ingredient.food && this.state.ingredients[ing].name === ingredient.food.name) return;
+                                                                                return <option key={l}>{this.state.ingredients[ing].name}</option>
+                                                                            })}
+
+                                                                            {Object.keys(FoodTypes).map((type, l) => {
+                                                                                if (!ingredient.food && ingredient.type === type) return;
+                                                                                return <option key={l}>type:{type}</option>
+                                                                            })}
+                                                                        </Form.Control>
+                                                                    </Form.Group>
+                                                                    <Form.Group as={Col}>
+                                                                        <Form.Control type="number" name={"ingredientamount-" + k} defaultValue={ingredient.amountg} />
+                                                                    </Form.Group>
+                                                                    <Form.Group as={Col} md="auto">
+                                                                        <Button variant="danger" md="auto" size="sm" onClick={() => this.removeIngredient(meal, k)}>-</Button>
+                                                                    </Form.Group>
+                                                                </Form.Row>
+                                                            </div>
+                                                        )}
+
+                                                        <Button variant="success" block size="sm" onClick={() => this.addIngredient(meal)}>+</Button>
+                                                        <Button variant="danger" block size="sm" onClick={() => this.delete(meal)}>Delete meal</Button>
+                                                    </Form>
+                                                </Card.Body>
+                                            </Card>
+                                        }
+                                    </Col>
+                                );
+                            }
+                            else return <div key={j}/>
+                        })}
                     </Row>
                 )}
             </Container>
