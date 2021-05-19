@@ -363,7 +363,6 @@ export const FoodTypes = {
     alcohol: "alcohol",
 
     other: "other",
-    taco: "taco",
     pizza: "pizza"
 }
 
@@ -403,18 +402,23 @@ export const Foods = { //cal (kcal) = per 100g
     soy_sauce: { name: "Soy Sauce", type: FoodTypes.sauce, cal: 84 },
     curry_roux: { name: "Curry Roux", type: FoodTypes.sauce, cal: 476 },
     honey: { name: "Honey", type: FoodTypes.sauce, cal: 317 },
+    hamburger_sauce: { name: "Hamburger Sauce", type: FoodTypes.sauce, cal: 245 },
 
-    //Bakes
+    //Baked
     spring_roll_wrapper: { name: "Spring Roll Wrappers", type: FoodTypes.baked, cal: 285 },
     naan: { name: "Naan Bread", type: FoodTypes.baked, cal: 285 },
     bun: { name: "Bun", type: FoodTypes.baked, cal: 330 },
     sausage_bread: { name: "Sausage Bread", type: FoodTypes.baked, cal: 300 },
     waffle: { name: "Waffle", type: FoodTypes.baked, cal: 215 },
+    pancake: { name: "Pancake", type: FoodTypes.baked, cal: 180 },
+    hamburger_bread: { name: "Hamburger Bread", type: FoodTypes.baked, cal: 320 },
+    tortilla: { name: "Tortilla", type: FoodTypes.baked, cal: 255 },
 
     //Drinks
     milk: { name: "Milk", type: FoodTypes.drink, cal: 41 },
     apple_juice: { name: "Apple Juice", type: FoodTypes.drink, cal: 42 },
     orange_juice: { name: "Orange Juice", type: FoodTypes.drink, cal: 43 },
+    smoothie: { name: "Smoothie", type: FoodTypes.fruit, cal: 50 },
     lemonade: { name: "Lemonade", type: FoodTypes.sweet_drink, cal: 43 },
     soda: { name: "Soda", type: FoodTypes.sweet_drink, cal: 42 },
     iced_coffee: { name: "Iced Coffee", type: FoodTypes.sweet_drink, cal: 58 },
@@ -434,18 +438,17 @@ export const Foods = { //cal (kcal) = per 100g
     tenderloin_pork: { name: "Tenderloin Pork", type: FoodTypes.meat, cal: 116 },
     tenderloin_cattle: { name: "Tenderloin Cattle", type: FoodTypes.meat, cal: 109 },
     bacon: { name: "Bacon", type: FoodTypes.meat, cal: 301 },
+    hamburger: { name: "Hamburger", type: FoodTypes.meat, cal: 218 },
 
     //Combo dinners/finished
     fish_gratin: { name: "Fish Gratin", type: FoodTypes.combo, cal: 135 },
     fish_sticks: { name: "Fish Sticks", type: FoodTypes.combo, cal: 180 },
+    tomato_soup_base: { name: "Tomato Soup Base", type: FoodTypes.combo, cal: 31 },
 
     //dinner fiber/carbs
     pasta: { name: "Pasta", type: FoodTypes.dinnerfiber, cal: 120 },
     potato: { name: "Potato", type: FoodTypes.dinnerfiber, cal: 75 },
     rice: { name: "Rice", type: FoodTypes.dinnerfiber, cal: 124 },
-
-    //taco
-    tortilla: { name: "Tortilla", type: FoodTypes.taco, cal: 255 },
 
     //pizza
     pizza_dough: { name: "Pizza Dough", type: FoodTypes.pizza, cal: 267 },
@@ -469,6 +472,9 @@ export const Foods = { //cal (kcal) = per 100g
     coconut_milk: { name: "Coconut Milk", type: FoodTypes.greens, cal: 209 },
     sweet_peas: { name: "Sweet Peas", type: FoodTypes.greens, cal: 42 },
     water_chestnut: { name: "Water Chestnut", type: FoodTypes.greens, cal: 38 },
+    cauliflower: { name: "Cauliflower", type: FoodTypes.greens, cal: 30 },
+    spring_onion: { name: "Spring Onion", type: FoodTypes.greens, cal: 23 },
+    leek: { name: "Leek", type: FoodTypes.greens, cal: 28 },
 
     //oils
     rapeseed_oil: { name: "Rapeseed Oil", type: FoodTypes.oil, cal: 892 },
@@ -661,6 +667,52 @@ export const Meals = [
             { food: Foods.soy_sauce, amountg: 13 },
             { food: Foods.honey, amountg: 22 },
             { food: Foods.curry_roux, amountg: 40 },]
+    },
+    {
+        name: "Cailiflower Soup", types: [MealTypes.dinner], ingredients: [
+            { food: Foods.cauliflower, amountg: 250 },
+            { food: Foods.rapeseed_oil, amountg: 10 },
+            { food: Foods.leek, amountg: 100 },]
+    },
+    {
+        name: "Cailiflower Gratin", types: [MealTypes.dinner], ingredients: [
+            { food: Foods.cauliflower, amountg: 250 },
+            { food: Foods.cheese, amountg: 30 },
+            { food: Foods.milk, amountg: 50 },
+            { food: Foods.rapeseed_oil, amountg: 10 },
+            { food: Foods.pasta, amountg: 100 },]
+    },
+    {
+        name: "Tomato Soup", types: [MealTypes.dinner], ingredients: [
+            { food: Foods.tomato_soup_base, amountg: 500 },
+            { food: Foods.pasta, amountg: 100 },]
+    },
+    {
+        name: "Onion Soup", types: [MealTypes.dinner], ingredients: [
+            { food: Foods.onion, amountg: 400 },
+            { food: Foods.rapeseed_oil, amountg: 10 },
+            { food: Foods.garlic, amountg: 10 },
+            { food: Foods.broth, amountg: 500 },
+            { food: Foods.breadslice, amountg: 40 },
+            { food: Foods.cheese, amountg: 15 },
+            { food: Foods.leek, amountg: 100 },]
+    },
+    {
+        name: "Hamburger", types: [MealTypes.dinner], ingredients: [
+            { food: Foods.hamburger, amountg: 150 },
+            { food: Foods.rapeseed_oil, amountg: 10 },
+            { food: Foods.hamburger_bread, amountg: 120 },
+            { food: Foods.cheese, amountg: 20 },
+            { food: Foods.ketchup, amountg: 10 },
+            { food: Foods.hamburger_sauce, amountg: 10 },]
+    },
+    {
+        name: "Pancakes", types: [MealTypes.dinner], ingredients: [
+            { food: Foods.pancake, amountg: 300 },
+            { food: Foods.hvite_sugar, amountg: 40 },
+            { food: Foods.butter, amountg: 30 },
+            { food: Foods.strawberry_jam, amountg: 30 },
+            { food: Foods.bacon, amountg: 30 },]
     },
     {
         name: "Bun", types: [MealTypes.dessert], ingredients: [

@@ -118,7 +118,7 @@ export class Home extends Component {
             return;
         }
 
-        let plan = MakeWeekPlan(this.state.selectedcalories, this.state.selectedfoodlist, this.state.fourthmeal, this.state.ingredients, this.state.percentdinner);
+        let plan = MakeWeekPlan(this.state.selectedcalories, this.state.selectedfoodlist, this.state.fourthmeal, this.state.ingredients, this.state.percentdinnerOn ? this.state.percentdinner : null);
         console.log(plan);
         this.setState({
             weekplan: plan,
@@ -135,7 +135,7 @@ export class Home extends Component {
             return;
         }
 
-        let plan = FillWeekPlan(this.state.weekplan, this.state.selectedcalories, this.state.selectedfoodlist, this.state.fourthmeal, this.state.ingredients, this.state.percentdinner);
+        let plan = FillWeekPlan(this.state.weekplan, this.state.selectedcalories, this.state.selectedfoodlist, this.state.fourthmeal, this.state.ingredients, this.state.percentdinnerOn ? this.state.percentdinner : null);
         console.log(plan);
         this.setState({
             weekplan: plan,
